@@ -7,105 +7,128 @@ from sklearn.cluster import KMeans
 from mlxtend.frequent_patterns import apriori, association_rules
 from sklearn.preprocessing import StandardScaler
 
+# Fix for Matplotlib issues
+import os
+import sys
+
+# Ensure the virtual environment is activated
+venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
+if sys.executable != venv_path:
+    st.error("⚠️ Please activate the virtual environment before running the script.")
+    st.stop()
+
 # Streamlit Page Config
 st.set_page_config(page_title="Amazon Data Analysis", layout="wide")
 
-# Sidebar
+# Sidebar Navigation
 st.sidebar.header("Amazon Dataset Analysis")
 st.sidebar.write("🔍 Select an analysis to explore the dataset.")
 
-# Load dataset
+# Load dataset with caching
 @st.cache_data
 def load_data():
-    file_path = "amazon.csv"
-    df = pd.read_csv(file_path)
+    try:
+        file_path = "amazon.csv"
+        df = pd.read_csv(file_path)
 
-    # Data Cleaning
-    df['discounted_price'] = df['discounted_price'].replace('[₹,]', '', regex=True).astype(float)
-    df['actual_price'] = df['actual_price'].replace('[₹,]', '', regex=True).astype(float)
-    df['discount_percentage'] = df['discount_percentage'].replace('%', '', regex=True).astype(float)
-    df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
-    df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
-    df.dropna(inplace=True)
+        # Data Cleaning
+        df['discounted_price'] = df['discounted_price'].replace('[₹,]', '', regex=True).astype(float)
+        df['actual_price'] = df['actual_price'].replace('[₹,]', '', regex=True).astype(float)
+        df['discount_percentage'] = df['discount_percentage'].replace('%', '', regex=True).astype(float)
+        df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
+        df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
+        df.dropna(inplace=True)
 
-    return df
+        return df
+    except Exception as e:
+        st.error(f"⚠️ Error loading dataset: {e}")
+        return None
 
 df = load_data()
 
-# Dataset Overview
-st.subheader("📊 Dataset Overview")
-st.write(df.head())
+if df is not None:
+    # Dataset Overview
+    st.subheader("📊 Dataset Overview")
+    st.write(df.head())
 
-# Exploratory Data Analysis (EDA)
-st.subheader("🔬 Exploratory Data Analysis")
+    # Exploratory Data Analysis (EDA)
+    st.subheader("🔬 Exploratory Data Analysis")
 
-# Column selection for analysis
-analysis_option = st.selectbox("Select Analysis Type:", ["Discounted Price Distribution", "Price Comparison", "Correlation Matrix"])
+    analysis_option = st.selectbox(
+        "Select Analysis Type:", 
+        ["Discounted Price Distribution", "Price Comparison", "Correlation Matrix"]
+    )
 
-if analysis_option == "Discounted Price Distribution":
-    st.write("### Distribution of Discounted Prices")
-    fig, ax = plt.subplots(figsize=(12, 5))
-    sns.histplot(df['discounted_price'], bins=50, kde=True, ax=ax)
-    st.pyplot(fig)
+    if analysis_option == "Discounted Price Distribution":
+        st.write("### Distribution of Discounted Prices")
+        fig, ax = plt.subplots(figsize=(12, 5))
+        sns.histplot(df['discounted_price'], bins=50, kde=True, ax=ax)
+        st.pyplot(fig)
 
-elif analysis_option == "Price Comparison":
-    st.write("### Actual Price vs Discounted Price")
-    fig, ax = plt.subplots(figsize=(12, 5))
-    sns.scatterplot(x=df['actual_price'], y=df['discounted_price'], ax=ax)
-    st.pyplot(fig)
+    elif analysis_option == "Price Comparison":
+        st.write("### Actual Price vs Discounted Price")
+        fig, ax = plt.subplots(figsize=(12, 5))
+        sns.scatterplot(x=df['actual_price'], y=df['discounted_price'], ax=ax)
+        st.pyplot(fig)
 
-elif analysis_option == "Correlation Matrix":
-    st.write("### Correlation Matrix")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.heatmap(df[['discounted_price', 'actual_price', 'rating', 'rating_count']].corr(), annot=True, cmap='coolwarm', ax=ax)
-    st.pyplot(fig)
+    elif analysis_option == "Correlation Matrix":
+        st.write("### Correlation Matrix")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.heatmap(df[['discounted_price', 'actual_price', 'rating', 'rating_count']].corr(), annot=True, cmap='coolwarm', ax=ax)
+        st.pyplot(fig)
 
-# Customer Segmentation using K-Means
-st.subheader("🎯 Customer Segmentation")
+    # Customer Segmentation using K-Means
+    st.subheader("🎯 Customer Segmentation")
 
-features = df[['discounted_price', 'actual_price', 'rating', 'rating_count']]
-scaler = StandardScaler()
-scaled_features = scaler.fit_transform(features)
+    try:
+        features = df[['discounted_price', 'actual_price', 'rating', 'rating_count']]
+        scaler = StandardScaler()
+        scaled_features = scaler.fit_transform(features)
 
-kmeans = KMeans(n_clusters=3, random_state=42)
-df['customer_segment'] = kmeans.fit_predict(scaled_features)
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        df['customer_segment'] = kmeans.fit_predict(scaled_features)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.scatterplot(x=df['discounted_price'], y=df['actual_price'], hue=df['customer_segment'], palette='viridis', ax=ax)
-st.pyplot(fig)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.scatterplot(x=df['discounted_price'], y=df['actual_price'], hue=df['customer_segment'], palette='viridis', ax=ax)
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"⚠️ Error in K-Means Clustering: {e}")
 
-# Association Rule Mining
-st.subheader("📈 Association Rule Mining")
-try:
-    basket = df.groupby(['user_id', 'product_name'])['category'].count().unstack().fillna(0)
-    basket = basket.map(lambda x: True if x > 0 else False)
+    # Association Rule Mining
+    st.subheader("📈 Association Rule Mining")
+    try:
+        basket = df.groupby(['user_id', 'product_name'])['category'].count().unstack().fillna(0)
+        basket = basket.map(lambda x: True if x > 0 else False)
 
-    frequent_itemsets = apriori(basket, min_support=0.001, use_colnames=True)
-    if frequent_itemsets.empty:
-        st.write("⚠️ No frequent itemsets found. Try lowering min_support.")
-    else:
-        rules = association_rules(frequent_itemsets, metric='lift', min_threshold=1.0)
-        st.write("### Top Association Rules")
-        st.write(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head())
-except:
-    st.write("⚠️ Error in Association Rule Mining. Ensure dataset has correct format.")
+        frequent_itemsets = apriori(basket, min_support=0.001, use_colnames=True)
+        if frequent_itemsets.empty:
+            st.write("⚠️ No frequent itemsets found. Try lowering min_support.")
+        else:
+            rules = association_rules(frequent_itemsets, metric='lift', min_threshold=1.0)
+            st.write("### Top Association Rules")
+            st.write(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head())
+    except Exception as e:
+        st.error(f"⚠️ Error in Association Rule Mining: {e}")
 
-# User Behavior Analysis
-st.subheader("📊 User Behavior Analysis")
-try:
-    df['review_content'] = df['review_content'].fillna("")
-    review_lengths = df['review_content'].apply(lambda x: len(str(x)))
+    # User Behavior Analysis
+    st.subheader("📊 User Behavior Analysis")
+    try:
+        df['review_content'] = df['review_content'].fillna("")
+        review_lengths = df['review_content'].apply(lambda x: len(str(x)))
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.histplot(review_lengths, bins=30, kde=True, ax=ax)
-    st.pyplot(fig)
-except:
-    st.write("⚠️ Review content missing in dataset.")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.histplot(review_lengths, bins=30, kde=True, ax=ax)
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"⚠️ Error in User Behavior Analysis: {e}")
 
-# Average Rating by Category
-st.subheader("⭐ Average Rating by Category")
-if "category" in df.columns:
-    avg_ratings = df.groupby('category')['rating'].mean().sort_values(ascending=False)
-    st.write(avg_ratings)
-else:
-    st.write("⚠️ Category column missing in dataset.")
+    # Average Rating by Category
+    st.subheader("⭐ Average Rating by Category")
+    try:
+        if "category" in df.columns:
+            avg_ratings = df.groupby('category')['rating'].mean().sort_values(ascending=False)
+            st.write(avg_ratings)
+        else:
+            st.write("⚠️ Category column missing in dataset.")
+    except Exception as e:
+        st.error(f"⚠️ Error in Average Rating Calculation: {e}")
