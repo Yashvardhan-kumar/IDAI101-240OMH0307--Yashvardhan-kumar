@@ -9,6 +9,10 @@ from sklearn.preprocessing import StandardScaler
 
 # Fix for Matplotlib issues``
 
+# Load dataset from GitHub
+file_path = "amazon.csv"
+df = pd.read_csv(file_path)
+
 # Ensure the virtual environment is activated
 ##venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
 ##if sys.executable != venv_path:
@@ -22,25 +26,14 @@ st.set_page_config(page_title="Amazon Data Analysis", layout="wide")
 st.sidebar.header("Amazon Dataset Analysis")
 st.sidebar.write("🔍 Select an analysis to explore the dataset.")
 
-# Load dataset with caching
-@st.cache_data
-def load_data():
-    try:
-        file_path = "amazon.csv"
-        df = pd.read_csv(file_path)
 
         # Data Cleaning
-        df['discounted_price'] = df['discounted_price'].replace('[₹,]', '', regex=True).astype(float)
-        df['actual_price'] = df['actual_price'].replace('[₹,]', '', regex=True).astype(float)
-        df['discount_percentage'] = df['discount_percentage'].replace('%', '', regex=True).astype(float)
-        df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
-        df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
-        df.dropna(inplace=True)
-
-        return df
-    except Exception as e:
-        st.error(f"⚠️ Error loading dataset: {e}")
-        return None
+df['discounted_price'] = df['discounted_price'].replace('[₹,]', '', regex=True).astype(float)
+df['actual_price'] = df['actual_price'].replace('[₹,]', '', regex=True).astype(float)
+df['discount_percentage'] = df['discount_percentage'].replace('%', '', regex=True).astype(float)
+df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
+df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
+df.dropna(inplace=True)
 
 df = load_data()
 
