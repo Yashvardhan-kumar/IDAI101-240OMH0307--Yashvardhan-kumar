@@ -7,15 +7,13 @@ from sklearn.cluster import KMeans
 from mlxtend.frequent_patterns import apriori, association_rules
 from sklearn.preprocessing import StandardScaler
 
-# Fix for Matplotlib issues
-import os
-import sys
+# Fix for Matplotlib issues``
 
 # Ensure the virtual environment is activated
-venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
-if sys.executable != venv_path:
-    st.error("⚠️ Please activate the virtual environment before running the script.")
-    st.stop()
+##venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
+##if sys.executable != venv_path:
+  #  st.error("⚠️ Please activate the virtual environment before running the script.")
+   # st.stop()
 
 # Streamlit Page Config
 st.set_page_config(page_title="Amazon Data Analysis", layout="wide")
