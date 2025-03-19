@@ -6,16 +6,10 @@ import seaborn as sns
 from sklearn.cluster import KMeans
 from mlxtend.frequent_patterns import apriori, association_rules
 from sklearn.preprocessing import StandardScaler
+
+# Fix for Matplotlib issues
 import os
 import sys
-import pyarrow as pa
-import warnings
-
-# Suppress specific warnings related to missing ScriptRunContext
-warnings.filterwarnings("ignore", message=".*missing ScriptRunContext.*")
-
-# Suppress matplotlib "More than 20 figures have been opened" warning
-warnings.filterwarnings("ignore", category=RuntimeWarning, message="More than 20 figures have been opened.*")
 
 # Ensure the virtual environment is activated
 venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
@@ -34,7 +28,7 @@ st.sidebar.write("🔍 Select an analysis to explore the dataset.")
 @st.cache_data
 def load_data():
     try:
-        file_path = "/content/amazon.csv"
+        file_path = "amazon.csv"
         df = pd.read_csv(file_path)
 
         # Data Cleaning
@@ -43,12 +37,7 @@ def load_data():
         df['discount_percentage'] = df['discount_percentage'].replace('%', '', regex=True).astype(float)
         df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
         df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
-
-        # Handle missing values
         df.dropna(inplace=True)
-
-        # Ensure correct data types (e.g., string for categorical columns)
-        df['category'] = df['category'].astype(str)
 
         return df
     except Exception as e:
@@ -75,21 +64,18 @@ if df is not None:
         fig, ax = plt.subplots(figsize=(12, 5))
         sns.histplot(df['discounted_price'], bins=50, kde=True, ax=ax)
         st.pyplot(fig)
-        #plt.close(fig)  # Close the figure to avoid memory issue
 
     elif analysis_option == "Price Comparison":
         st.write("### Actual Price vs Discounted Price")
         fig, ax = plt.subplots(figsize=(12, 5))
         sns.scatterplot(x=df['actual_price'], y=df['discounted_price'], ax=ax)
         st.pyplot(fig)
-        #plt.close(fig)  # Close the figure to avoid memory issue
 
     elif analysis_option == "Correlation Matrix":
         st.write("### Correlation Matrix")
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.heatmap(df[['discounted_price', 'actual_price', 'rating', 'rating_count']].corr(), annot=True, cmap='coolwarm', ax=ax)
         st.pyplot(fig)
-        #plt.close(fig)  # Close the figure to avoid memory issue
 
     # Customer Segmentation using K-Means
     st.subheader("🎯 Customer Segmentation")
@@ -105,7 +91,6 @@ if df is not None:
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.scatterplot(x=df['discounted_price'], y=df['actual_price'], hue=df['customer_segment'], palette='viridis', ax=ax)
         st.pyplot(fig)
-        #plt.close(fig)  # Close the figure to avoid memory issue
     except Exception as e:
         st.error(f"⚠️ Error in K-Means Clustering: {e}")
 
@@ -120,11 +105,6 @@ if df is not None:
             st.write("⚠️ No frequent itemsets found. Try lowering min_support.")
         else:
             rules = association_rules(frequent_itemsets, metric='lift', min_threshold=1.0)
-            
-            # Convert frozenset to string for compatibility with Arrow
-            rules['antecedents'] = rules['antecedents'].apply(lambda x: ', '.join(list(x)))
-            rules['consequents'] = rules['consequents'].apply(lambda x: ', '.join(list(x)))
-            
             st.write("### Top Association Rules")
             st.write(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head())
     except Exception as e:
@@ -139,7 +119,6 @@ if df is not None:
         fig, ax = plt.subplots(figsize=(10, 5))
         sns.histplot(review_lengths, bins=30, kde=True, ax=ax)
         st.pyplot(fig)
-        #plt.close(fig)  # Close the figure to avoid memory issue
     except Exception as e:
         st.error(f"⚠️ Error in User Behavior Analysis: {e}")
 
@@ -153,10 +132,3 @@ if df is not None:
             st.write("⚠️ Category column missing in dataset.")
     except Exception as e:
         st.error(f"⚠️ Error in Average Rating Calculation: {e}")
-
-    # Check Arrow Conversion
-    try:
-        table = pa.Table.from_pandas(df)
-        st.write("Arrow conversion successful.")
-    except Exception as e:
-        st.error(f"⚠️ Arrow conversion error: {e}")
