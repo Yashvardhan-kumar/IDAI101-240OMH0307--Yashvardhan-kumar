@@ -3,7 +3,7 @@
 📌 Overview
 This project analyzes Amazon's customer data using various **data mining techniques** such as **K-Means clustering, Exploratory Data Analysis (EDA), User Behavior Analysis, and Association Rule Mining**.
 
-🔗 **Live Streamlit App**: [Click here](https://idai105-240omh0307--yashvardhan-kumar-eeptlxpi6p6g8qliwxfsdg.streamlit.app/)
+🔗 **Live Streamlit App**: [Click here](https://idai105-1000199--yashvardhan-kumar-mcn9ruf9e8tfe2nukfmvga.streamlit.app/)
 
  📊 Key Components
 
