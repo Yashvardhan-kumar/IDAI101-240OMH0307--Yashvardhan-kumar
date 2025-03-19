@@ -35,7 +35,6 @@ df['rating'] = pd.to_numeric(df['rating'], errors='coerce')
 df['rating_count'] = df['rating_count'].replace(',', '', regex=True).astype(float)
 df.dropna(inplace=True)
 
-df = load_data()
 
 if df is not None:
     # Dataset Overview
