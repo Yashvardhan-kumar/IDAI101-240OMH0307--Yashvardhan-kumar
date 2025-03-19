@@ -13,12 +13,6 @@ from sklearn.preprocessing import StandardScaler
 file_path = "amazon.csv"
 df = pd.read_csv(file_path)
 
-# Ensure the virtual environment is activated
-##venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
-##if sys.executable != venv_path:
-  #  st.error("⚠️ Please activate the virtual environment before running the script.")
-   # st.stop()
-
 # Streamlit Page Config
 st.set_page_config(page_title="Amazon Data Analysis", layout="wide")
 
