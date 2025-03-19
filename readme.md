@@ -38,8 +38,10 @@ This project analyzes Amazon's customer data using various **data mining techniq
 - **Jupyter Notebook/PyCharm** (for development)
 
 👨‍🎓 Project By
-**Yashvardhan Kumar**  
+**Yashvardhan Kumar(100199)**  
 **Birla Open Minds International School**
+CRS- AI
+Course- Data Mining
 
 ---
 ⭐ Feel free to explore the **live demo** and use this project for learning purposes!
